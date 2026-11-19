@@ -59,7 +59,7 @@ function echoPhrase(text: string) {
 function lastAssistantTopic(history: ChatMessage[]): Topic | null {
   for (let i = history.length - 1; i >= 0; i--) {
     const m = history[i];
-    if (m.role === "assistant" && m.topic) return TOPICS.find((t) => t.id === m.topic) ?? null;
+    if (m && m.role === "assistant" && m.topic) return TOPICS.find((t) => t.id === m.topic) ?? null;
   }
   return null;
 }
@@ -242,7 +242,7 @@ export function respond(input: string, history: ChatMessage[] = []): ChatReply {
   if (definition) return definition;
 
   const scored = scoreTopics(text);
-  if (scored.length) return topicReply(scored[0].topic, text, seed, history);
+  if (scored[0]) return topicReply(scored[0].topic, text, seed, history);
 
   const glossaryAny = glossaryReply(text);
   if (glossaryAny) return glossaryAny;

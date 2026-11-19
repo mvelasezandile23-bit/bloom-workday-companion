@@ -44,7 +44,7 @@ export function RichText({ text }: { text: string }) {
         if (rest.length && rest.every((l) => /^(\d+\.|[-•])\s/.test(l))) {
           return (
             <div key={bi} className="space-y-2">
-              <p>{inline(first)}</p>
+              <p>{inline(first ?? "")}</p>
               <RichText text={rest.join("\n")} />
             </div>
           );

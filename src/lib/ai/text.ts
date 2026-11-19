@@ -10,7 +10,7 @@ export function hash(input: string): number {
 }
 
 export function pick<T>(items: readonly T[], seed: number, offset = 0): T {
-  return items[(seed + offset * 7919) % items.length];
+  return items[(seed + offset * 7919) % items.length] as T;
 }
 
 /** Picks `count` distinct items in a seed-dependent order. */
@@ -20,7 +20,7 @@ export function pickMany<T>(items: readonly T[], count: number, seed: number): T
   for (let i = arr.length - 1; i > 0; i--) {
     s = (Math.imul(s, 1103515245) + 12345) >>> 0;
     const j = s % (i + 1);
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+    [arr[i], arr[j]] = [arr[j] as T, arr[i] as T];
   }
   return arr.slice(0, count);
 }
@@ -128,7 +128,7 @@ export function resolveDate(phrase: string, now = new Date()): Date | null {
   const mm = p.match(monthRe);
   if (mm) {
     const day = Number(mm[1] ?? mm[4]);
-    const mName = (mm[2] ?? mm[3]).slice(0, 3);
+    const mName = (mm[2] ?? mm[3] ?? "").slice(0, 3);
     const month = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(mName);
     let d = new Date(base.getFullYear(), month, day);
     if (d < base) d = new Date(base.getFullYear() + 1, month, day);
@@ -151,6 +151,6 @@ export function toISODate(d: Date) {
 }
 
 export function fromISODate(s: string) {
-  const [y, m, d] = s.split("-").map(Number);
+  const [y = 1970, m = 1, d = 1] = s.split("-").map(Number);
   return new Date(y, m - 1, d);
 }

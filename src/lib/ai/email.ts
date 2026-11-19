@@ -112,9 +112,9 @@ const NAME = /^(?:my\s+|our\s+|the\s+)?([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)?)/;
 
 function readRecipient(rest: string): { name: string | null; role: string | null; consumed: number } {
   const role = rest.match(ROLE_WORDS);
-  if (role) return { name: null, role: role[1].toLowerCase(), consumed: role[0].length };
+  if (role) return { name: null, role: (role[1] ?? "").toLowerCase(), consumed: role[0].length };
   const name = rest.match(NAME);
-  if (name) return { name: name[1], role: null, consumed: name[0].length };
+  if (name) return { name: name[1] ?? null, role: null, consumed: name[0].length };
   return { name: null, role: null, consumed: 0 };
 }
 
@@ -162,10 +162,10 @@ function findRecipientAnywhere(raw: string): { name: string | null; role: string
     const r = readRecipient(raw.slice(m.index + m[0].length));
     if (r.role) return { name: null, role: r.role };
     if (r.name) {
-      const first = r.name.split(" ")[0];
+      const first = r.name.split(" ")[0] ?? "";
       if (!NOT_NAMES.test(first) && !/\d/.test(r.name)) {
         const second = r.name.split(" ")[1];
-        return { name: second && NOT_NAMES.test(second) ? first : r.name, role: null };
+        return { name: second && NOT_NAMES.test(second) ? first : (r.name ?? null), role: null };
       }
     }
   }
@@ -190,11 +190,12 @@ export function parseInstructions(raw: string): Parsed {
   if (pre) text = text.slice(pre[0].length);
   const toMatch = pre && !/^(?:to|for)\s/i.test(text) && /^(?:email|message)\s+$/i.test(pre[0]) ? [""] : text.match(/^(?:to|for)\s+/i);
   if (toMatch) {
-    const r = readRecipient(text.slice(toMatch[0].length));
+    const toLen = toMatch[0]?.length ?? 0;
+    const r = readRecipient(text.slice(toLen));
     if (r.consumed) {
       recipientName = r.name;
       recipientRole = r.role;
-      text = text.slice(toMatch[0].length + r.consumed).replace(/^[\s,]+/, "");
+      text = text.slice(toLen + r.consumed).replace(/^[\s,]+/, "");
     }
   }
   if (!recipientName && !recipientRole) {
@@ -207,7 +208,7 @@ export function parseInstructions(raw: string): Parsed {
   for (const [kind, re] of CLAUSES) {
     const m = sentence.match(re);
     if (m) {
-      const captured = kind === "askIf" ? `${m[1]} ${m[2]}` : m[1];
+      const captured = kind === "askIf" ? `${m[1]} ${m[2]}` : (m[1] ?? "");
       return { kind, action: stripEndPunct(captured), recipientName, recipientRole };
     }
   }
